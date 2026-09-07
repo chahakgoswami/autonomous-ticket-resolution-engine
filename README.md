@@ -4,7 +4,7 @@ Autonomous agent that reads tickets, queries a mock DB, applies fixes, and confi
 
 **Domain:** Agentic AI
 **Language:** python
-**Demonstrates:** You build agents that resolve, not just reply.
+
 
 ## 7-day build plan
 
