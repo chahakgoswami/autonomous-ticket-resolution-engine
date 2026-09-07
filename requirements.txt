@@ -1,0 +1,2 @@
+# No third-party dependencies for Day 1 — stdlib only.
+# pytest added on Day 7.
