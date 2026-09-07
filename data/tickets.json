@@ -1,0 +1,75 @@
+[
+  {
+    "id": "TKT-001",
+    "title": "User account locked after failed logins",
+    "description": "User john.doe@example.com cannot log in. Account appears locked after 5 failed attempts. Please investigate and reset if needed.",
+    "status": "open",
+    "priority": "high",
+    "category": "account",
+    "created_at": "2024-01-15T09:23:00Z",
+    "updated_at": "2024-01-15T09:23:00Z",
+    "requester": "jane.smith@example.com",
+    "metadata": {
+      "user_email": "john.doe@example.com",
+      "error_code": "ACCOUNT_LOCKED"
+    }
+  },
+  {
+    "id": "TKT-002",
+    "title": "Order #78432 stuck in processing",
+    "description": "Order 78432 has been in processing state for 3 days. Customer is asking for an update. May need to re-trigger the fulfillment pipeline.",
+    "status": "open",
+    "priority": "medium",
+    "category": "order",
+    "created_at": "2024-01-15T11:00:00Z",
+    "updated_at": "2024-01-15T11:00:00Z",
+    "requester": "support@example.com",
+    "metadata": {
+      "order_id": "78432",
+      "customer_email": "alice.wonder@example.com"
+    }
+  },
+  {
+    "id": "TKT-003",
+    "title": "Delete test records from production DB",
+    "description": "Several test user records were accidentally inserted into production. Need to remove users with emails matching *@test.example.com pattern.",
+    "status": "open",
+    "priority": "high",
+    "category": "database",
+    "created_at": "2024-01-15T13:45:00Z",
+    "updated_at": "2024-01-15T13:45:00Z",
+    "requester": "admin@example.com",
+    "metadata": {
+      "pattern": "*@test.example.com",
+      "affected_table": "users"
+    }
+  },
+  {
+    "id": "TKT-004",
+    "title": "Check inventory levels for SKU-9981",
+    "description": "Product SKU-9981 may be out of stock. Please check current inventory levels and report back.",
+    "status": "open",
+    "priority": "low",
+    "category": "inventory",
+    "created_at": "2024-01-15T14:30:00Z",
+    "updated_at": "2024-01-15T14:30:00Z",
+    "requester": "ops@example.com",
+    "metadata": {
+      "sku": "SKU-9981"
+    }
+  },
+  {
+    "id": "TKT-005",
+    "title": "Reset password for user bob.builder@example.com",
+    "description": "User bob.builder@example.com has forgotten their password and cannot reset it via email (email delivery issue). Please reset manually.",
+    "status": "open",
+    "priority": "medium",
+    "category": "account",
+    "created_at": "2024-01-15T15:10:00Z",
+    "updated_at": "2024-01-15T15:10:00Z",
+    "requester": "helpdesk@example.com",
+    "metadata": {
+      "user_email": "bob.builder@example.com"
+    }
+  }
+]
