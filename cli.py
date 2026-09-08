@@ -7,6 +7,7 @@ import sys
 from engine.ticket_reader import TicketReader
 from engine.ticket_store import TicketStore
 from engine.mock_db import MockDatabase
+from engine.query_engine import QueryEngine
 
 
 def cmd_read(args):
@@ -58,6 +59,24 @@ def cmd_db(args):
         print(row)
 
 
+def cmd_query(args):
+    """Run a natural-language-style query against the mock DB."""
+    import json
+
+    ctx = {}
+    if args.context:
+        try:
+            ctx = json.loads(args.context)
+        except json.JSONDecodeError as exc:
+            print(f"Error: --context must be valid JSON. {exc}", file=sys.stderr)
+            sys.exit(1)
+
+    engine = QueryEngine()
+    result = engine.run(args.intent, ctx)
+    if not result.success:
+        sys.exit(1)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="engine",
@@ -78,6 +97,23 @@ def build_parser() -> argparse.ArgumentParser:
     db_p = subparsers.add_parser("db", help="Inspect a mock DB table")
     db_p.add_argument("table", help="Table name (users | orders | inventory)")
     db_p.set_defaults(func=cmd_db)
+
+    # query <intent> [--context JSON]
+    query_p = subparsers.add_parser(
+        "query",
+        help="Run a natural-language query against the mock DB",
+    )
+    query_p.add_argument(
+        "intent",
+        help="Intent string, e.g. 'find user' or 'check order'",
+    )
+    query_p.add_argument(
+        "--context",
+        default="{}",
+        metavar="JSON",
+        help='JSON object of query parameters, e.g. \'{"email": "john.doe@example.com"}\'',
+    )
+    query_p.set_defaults(func=cmd_query)
 
     return parser
 
