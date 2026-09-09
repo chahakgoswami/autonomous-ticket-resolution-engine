@@ -8,6 +8,7 @@ from engine.ticket_reader import TicketReader
 from engine.ticket_store import TicketStore
 from engine.mock_db import MockDatabase
 from engine.query_engine import QueryEngine
+from engine.fix_planner import FixPlanner
 
 
 def cmd_read(args):
@@ -77,6 +78,26 @@ def cmd_query(args):
         sys.exit(1)
 
 
+def cmd_plan(args):
+    """Produce and display an ActionPlan for a ticket."""
+    reader = TicketReader()
+    planner = FixPlanner()
+
+    if args.ticket_id == "all":
+        tickets = reader.load_all()
+        if not tickets:
+            print("No tickets found.")
+            return
+        for ticket in tickets:
+            planner.plan(ticket)
+    else:
+        ticket = reader.load(args.ticket_id)
+        if ticket is None:
+            print(f"Error: Ticket '{args.ticket_id}' not found.", file=sys.stderr)
+            sys.exit(1)
+        planner.plan(ticket)
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="engine",
@@ -114,6 +135,14 @@ def build_parser() -> argparse.ArgumentParser:
         help='JSON object of query parameters, e.g. \'{"email": "john.doe@example.com"}\'',
     )
     query_p.set_defaults(func=cmd_query)
+
+    # plan <ticket_id | all>
+    plan_p = subparsers.add_parser(
+        "plan",
+        help="Produce an ActionPlan for a ticket (or 'all')",
+    )
+    plan_p.add_argument("ticket_id", help="Ticket ID (e.g. TKT-001) or 'all'")
+    plan_p.set_defaults(func=cmd_plan)
 
     return parser
 
