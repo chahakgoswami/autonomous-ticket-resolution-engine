@@ -9,6 +9,7 @@ from engine.ticket_store import TicketStore
 from engine.mock_db import MockDatabase
 from engine.query_engine import QueryEngine
 from engine.fix_planner import FixPlanner
+from engine.confirmation_gate import HumanConfirmationGate
 
 
 def cmd_read(args):
@@ -98,6 +99,29 @@ def cmd_plan(args):
         planner.plan(ticket)
 
 
+def cmd_gate(args):
+    """Run the HumanConfirmationGate on a ticket's ActionPlan."""
+    reader = TicketReader()
+    planner = FixPlanner()
+    gate = HumanConfirmationGate()
+
+    ticket_ids = []
+    if args.ticket_id == "all":
+        reader_inst = TicketReader()
+        ticket_ids = [t.id for t in reader_inst.load_all()]
+    else:
+        ticket_ids = [args.ticket_id]
+
+    for tid in ticket_ids:
+        ticket = reader.load(tid)
+        if ticket is None:
+            print(f"Error: Ticket '{tid}' not found.", file=sys.stderr)
+            continue
+        plan = planner.plan(ticket)
+        decision = gate.check(plan, auto_yes=args.auto_yes)
+        print("\n" + str(decision) + "\n")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="engine",
@@ -143,6 +167,20 @@ def build_parser() -> argparse.ArgumentParser:
     )
     plan_p.add_argument("ticket_id", help="Ticket ID (e.g. TKT-001) or 'all'")
     plan_p.set_defaults(func=cmd_plan)
+
+    # gate <ticket_id | all> [--auto-yes]
+    gate_p = subparsers.add_parser(
+        "gate",
+        help="Run the HumanConfirmationGate on a ticket's ActionPlan",
+    )
+    gate_p.add_argument("ticket_id", help="Ticket ID (e.g. TKT-001) or 'all'")
+    gate_p.add_argument(
+        "--auto-yes",
+        action="store_true",
+        default=False,
+        help="Auto-approve destructive plans without interactive prompt",
+    )
+    gate_p.set_defaults(func=cmd_gate)
 
     return parser
 
