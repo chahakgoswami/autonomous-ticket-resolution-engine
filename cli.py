@@ -10,6 +10,7 @@ from engine.mock_db import MockDatabase
 from engine.query_engine import QueryEngine
 from engine.fix_planner import FixPlanner
 from engine.confirmation_gate import HumanConfirmationGate
+from engine.resolution_executor import ResolutionExecutor
 
 
 def cmd_read(args):
@@ -122,6 +123,35 @@ def cmd_gate(args):
         print("\n" + str(decision) + "\n")
 
 
+def cmd_execute(args):
+    """Execute the ActionPlan for a ticket through the full pipeline."""
+    store = TicketStore()
+    reader = TicketReader(store=store)
+    db = MockDatabase()
+    planner = FixPlanner()
+    gate = HumanConfirmationGate()
+    executor = ResolutionExecutor(db=db, ticket_store=store)
+
+    ticket_ids = []
+    if args.ticket_id == "all":
+        ticket_ids = [t.id for t in reader.load_all()]
+    else:
+        ticket_ids = [args.ticket_id]
+
+    for tid in ticket_ids:
+        ticket = reader.load(tid)
+        if ticket is None:
+            print(f"Error: Ticket '{tid}' not found.", file=sys.stderr)
+            continue
+
+        plan = planner.plan(ticket)
+        decision = gate.check(plan, auto_yes=args.auto_yes)
+        report = executor.execute(plan, decision)
+        print()
+
+    print("\nExecution complete.")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="engine",
@@ -181,6 +211,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Auto-approve destructive plans without interactive prompt",
     )
     gate_p.set_defaults(func=cmd_gate)
+
+    # execute <ticket_id | all> [--auto-yes]
+    execute_p = subparsers.add_parser(
+        "execute",
+        help="Plan → Gate → Execute the full resolution pipeline for a ticket",
+    )
+    execute_p.add_argument("ticket_id", help="Ticket ID (e.g. TKT-001) or 'all'")
+    execute_p.add_argument(
+        "--auto-yes",
+        action="store_true",
+        default=False,
+        help="Auto-approve destructive plans without interactive prompt",
+    )
+    execute_p.set_defaults(func=cmd_execute)
 
     return parser
 
